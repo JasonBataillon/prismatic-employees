@@ -14,10 +14,15 @@ GET {{host}}/employees/2
 GET {{host}}/employees/123
 
 ### Delete specific employee
-DELETE {{host}}/employees/1
+DELETE {{host}}/employees/11
 
 ### Update specific employee
-PUT {{host}}/employees/1
+PUT {{host}}/employees/2
+Content-Type: application/json
+
+{
+"name": "Replaced"
+}
 
 ### Add this employee
 POST {{host}}/employees

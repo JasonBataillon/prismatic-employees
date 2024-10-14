@@ -1,5 +1,6 @@
 const prisma = require('../prisma');
 
+// Creates 10 new employees, either with a unique id number
 const seed = async () => {
   const employees = [];
   for (let i = 0; i < 10; i++) {

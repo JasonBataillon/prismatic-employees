@@ -1,79 +1,114 @@
 const express = require('express');
 const router = express.Router();
-const employees = require('../seed');
+module.exports = router;
+
+// Use Prisma for database operations
+const prisma = require('../prisma');
 
 // Send an array of all employees
-router.get('/', (req, res) => {
-  res.json(employees);
+router.get('/', async (req, res, next) => {
+  try {
+    const employees = await prisma.employee.findMany();
+    res.json(employees);
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Send an employee with a specific ID
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res, next) => {
   const { id } = req.params;
-  const employee = employees.find((e) => e.id === +id);
-  if (employee) {
-    res.json(employee);
-  } else {
-    res.status(404).send(`There is no employee with id ${id}.`);
+
+  try {
+    const employee = await prisma.employee.findUnique({
+      where: { id: +id },
+    });
+
+    if (employee) {
+      res.json(employee);
+    } else {
+      res.status(404).send(`There is no employee with id ${id}.`);
+    }
+  } catch (e) {
+    next(e);
   }
 });
 
 // Creates a new employee with a provided name
-router.post('/', (req, res) => {
-  const employee = req.body;
-  if (employee && employee.id) {
-    const employeeExistsAlready = employees.find((e) => e.id === employee.id);
-    if (!employeeExistsAlready) {
-      employees.push(employee);
-      res.status(201).json(employees);
+router.post('/', async (req, res, next) => {
+  const { id, name } = req.body;
+
+  try {
+    if (name && typeof name === 'string' && name.trim() !== '') {
+      const employeeExistsAlready = await prisma.employee.findUnique({
+        where: { id: id },
+      });
+
+      if (!employeeExistsAlready) {
+        const newEmployee = await prisma.employee.create({
+          data: { id, name },
+        });
+        res.status(201).json(newEmployee);
+      } else {
+        res.status(400).send('This employee already exists.');
+      }
     } else {
-      res.status(400).send('This player already exists.');
+      res
+        .status(400)
+        .send(`Invalid employee data: ${JSON.stringify(req.body)}`);
     }
-  } else {
-    res.status(400).send(`Invalid employee data: ${JSON.stringify(employee)}`);
+  } catch (e) {
+    next(e);
   }
 });
 
 // Updates employee with a specific ID with the provided data
-
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
 
-  // If the name doesn't exists, isn't a string, or is empty this error will appear
-  if (!name || typeof name !== 'string' || name.trim() === '') {
-    return res.status(400).send('Entering a player name is required.');
+  try {
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return res.status(400).send('A valid employee name is required.');
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: +id },
+    });
+
+    if (!employee) {
+      return res.status(404).send(`There is no employee with id ${id}.`);
+    }
+
+    const updatedEmployee = await prisma.employee.update({
+      where: { id: +id },
+      data: { name },
+    });
+
+    res.status(200).json(updatedEmployee);
+  } catch (e) {
+    next(e);
   }
-
-  // Finds the employee by their ID
-  const employee = employees.findIndex((e) => e.id === +id);
-  if (employee === -1) {
-    return res.status(404).send(`There is no employee with id ${id}.`);
-  }
-
-  //Updates the employee's name
-  employees[employee].name = name;
-
-  //Sends the updated employee
-  res.status(200).json(employees[employee]);
 });
 
 // Deletes an employee with a specific ID
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res, next) => {
   const { id } = req.params;
+  try {
+    const employee = await prisma.employee.findUnique({
+      where: { id: +id },
+    });
 
-  // Finds the index of the employee by their ID
-  const employee = employee.findIndex((e) => e.id === +id);
+    if (!employee) {
+      return res.status(404).send(`There is no employee with id ${id}.`);
+    }
 
-  // If the employee is not found, send the 404 error
-  if (employee === -1) {
-    return res.status(404).send(`There is no employee with id ${id}.`);
+    await prisma.employee.delete({
+      where: { id: +id },
+    });
+
+    res.status(204).send(); // Use 204 No Content for successful deletion
+  } catch (e) {
+    next(e);
   }
-
-  // REmoves the employee from the array
-  employee.splice(employee, 1);
-
-  res.status(200).send();
 });
-
-module.exports = router;
