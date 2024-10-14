@@ -7,22 +7,8 @@ GET {{host}}
 ### Get all employees
 GET {{host}}/employees
 
-### Get specific employee
-GET {{host}}/employees/2
-
-### Get nonexistent employee
-GET {{host}}/employees/123
-
-### Delete specific employee
-DELETE {{host}}/employees/11
-
-### Update specific employee
-PUT {{host}}/employees/2
-Content-Type: application/json
-
-{
-"name": "Replaced"
-}
+### Get all employees
+GET {{host}}/employee
 
 ### Add this employee
 POST {{host}}/employees
@@ -37,21 +23,43 @@ POST {{host}}/employees
 Content-Type: application/json
 
 {
-    "id": 12, "name": "Bruce Wayne"
+    "id": jas, "name": "Bruce Wayne"
 }
 
-### Add this employee
-POST {{host}}/employees
+### Get specific employee
+GET {{host}}/employees/2
+
+### Get nonexistent employee
+GET {{host}}/employees/123
+
+### Update specific employee
+PUT {{host}}/employees/2
 Content-Type: application/json
 
 {
-    "id": 13, "name": "Bruce Almighty"
+"name": "Replaced"
 }
 
-### Add this employee
-POST {{host}}/employees
+### Update specific employee
+PUT {{host}}/employees/17
 Content-Type: application/json
 
 {
-    "id": 14, "name": "Bruce Banner"
+"name": "Replaced"
 }
+
+### Update specific employee
+PUT {{host}}/employees/2
+Content-Type: application/json
+
+{
+"name": Replaced
+}
+
+// Post employee 11 between lines 13-14 to see working results of this request
+### Delete specific employee
+DELETE {{host}}/employees/11
+
+// Press this if you never want to see Mr.3 ever again.
+### Delete specific employee
+DELETE {{host}}/employees/3
